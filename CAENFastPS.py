@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-
-# Copyright (C) 2020  MBI-Division-B
-# MIT License, refer to LICENSE file
-# Author: Luca Barbera / Email: barbera@mbi-berlin.de
-
-
 from tango import AttrWriteType, DevState, DebugIt, DispLevel
 from tango.server import Device, attribute, command, device_property
 
 # import the drivers you will use
 
 
-class TemplateDeviceServer(Device):
+class CAENFastPS(Device):
     '''
     This docstring should describe your Tango Class and optionally
     what it depends on (drivers etc).
@@ -129,4 +122,4 @@ class TemplateDeviceServer(Device):
 
 # start the server
 if __name__ == "__main__":
-    TemplateDeviceServer.run_server()
+    CAENFastPS.run_server()
