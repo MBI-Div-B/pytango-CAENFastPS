@@ -64,7 +64,7 @@ class CAENFastPS(Device):
          #   self.error_stream('Error on initialization!')
         
         # in logging mode "info" or lower
-        self.set_state(DevState.ON)
+        self.set_state(DevState.STANDBY)
 
     def delete_device(self):
         self.set_state(DevState.OFF)
@@ -77,9 +77,9 @@ class CAENFastPS(Device):
         self.debug_stream(bin_status)
         self.__enabled = bool(int(bin_status[-1]))
         if self.__enabled:
-            self.set_state(DevState.RUNNING)
-        else:
             self.set_state(DevState.ON)
+        else:
+            self.set_state(DevState.STANDBY)
         
         self.__fault = bool(int(bin_status[-2]))
         if self.__fault:
