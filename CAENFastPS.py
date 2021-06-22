@@ -51,19 +51,18 @@ class CAENFastPS(Device):
 
     def init_device(self):
         super().init_device()
-        #try:
-        self.info_stream('Trying to connect to {:s}:{:d}'.format(self.IPaddress, self.Port))
-        self.con = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 
-                                socket.IPPROTO_TCP)
-        self.con.connect((self.IPaddress, self.Port))
-        self.con.settimeout(5)
-        self.con.setblocking(True)
-        idn = self.write_read('VER')
-        self.info_stream('Connection established for {:s}'.format(idn))
-        #except:
-         #   self.error_stream('Error on initialization!')
-        
-        # in logging mode "info" or lower
+        try:
+            self.info_stream('Trying to connect to {:s}:{:d}'.format(self.IPaddress, self.Port))
+            self.con = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 
+                                    socket.IPPROTO_TCP)
+            self.con.connect((self.IPaddress, self.Port))
+            self.con.settimeout(5)
+            self.con.setblocking(True)
+            idn = self.write_read('VER')
+            self.info_stream('Connection established for {:s}'.format(idn))
+        except:
+            self.error_stream('Error on initialization!')
+
         self.set_state(DevState.STANDBY)
 
     def delete_device(self):
