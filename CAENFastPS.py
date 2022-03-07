@@ -25,11 +25,23 @@ class CAENFastPS(Device):
                          dtype=float,
                          access=AttrWriteType.READ_WRITE,
                          unit='A',)
+    
+    ramp_current = attribute(label='ramp current',
+                         dtype=float,
+                         access=AttrWriteType.READ_WRITE,
+                         unit='A/s',
+                         min_value=0)
 
     voltage = attribute(label='voltage',
                         dtype=float,
                         access=AttrWriteType.READ_WRITE,
                         unit='V',)
+    
+    ramp_voltage = attribute(label='ramp voltage',
+                         dtype=float,
+                         access=AttrWriteType.READ_WRITE,
+                         unit='V/s',
+                         min_value=0)
 
     power = attribute(label='power',
                         dtype=float,
@@ -44,6 +56,10 @@ class CAENFastPS(Device):
     enabled = attribute(label='enabled',
                         dtype=bool,
                         access=AttrWriteType.READ,)
+    
+    ramping = attribute(label='ramping',
+                        dtype=bool,
+                        access=AttrWriteType.READ_WRITE,)
 
     fault = attribute(label='fault',
                         dtype=bool,
@@ -64,6 +80,7 @@ class CAENFastPS(Device):
             self.error_stream('Error on initialization!')
 
         self.set_state(DevState.STANDBY)
+        self.__ramping = False
 
     def delete_device(self):
         self.set_state(DevState.OFF)
@@ -75,10 +92,14 @@ class CAENFastPS(Device):
         bin_status = f'{number:{pad}{rjust}{size}{kind}}'
         self.debug_stream(bin_status)
         self.__enabled = bool(int(bin_status[-1]))
-        if self.__enabled:
-            self.set_state(DevState.ON)
-        else:
+        self.__isramping = bool(int(bin_status[-13]))
+        if not self.__enabled:
             self.set_state(DevState.STANDBY)
+        else:
+            if self.__isramping:
+                self.set_state(DevState.MOVING)
+            else:
+                self.set_state(DevState.ON)
         
         self.__fault = bool(int(bin_status[-2]))
         if self.__fault:
@@ -90,13 +111,31 @@ class CAENFastPS(Device):
         return float(self.write_read('MRI'))
 
     def write_current(self, value):
-        self.write_read('MWI:{:f}'.format(value))
+        if self.__ramping:
+            self.write_read('MWIR:{:f}'.format(value))
+        else:
+            self.write_read('MWI:{:f}'.format(value))
+
+    def read_ramp_current(self):
+        return float(self.write_read('MSRI:?'))
+
+    def write_ramp_current(self, value):
+        self.write_read('MSRI:{:f}'.format(value))
 
     def read_voltage(self):
         return float(self.write_read('MRV'))
 
     def write_voltage(self, value):
-        self.write_read('MWV:{:f}'.format(value))
+        if self.__ramping:
+            self.write_read('MWVR:{:f}'.format(value))
+        else:
+            self.write_read('MWV:{:f}'.format(value))
+
+    def read_ramp_voltage(self):
+        return float(self.write_read('MSRV:?'))
+
+    def write_ramp_voltage(self, value):
+        self.write_read('MSRV:{:f}'.format(value))
 
     def read_power(self):
         return float(self.write_read('MRW'))
@@ -106,6 +145,12 @@ class CAENFastPS(Device):
 
     def read_enabled(self):
         return self.__enabled
+
+    def read_ramping(self):
+        return self.__ramping
+
+    def write_ramping(self, value):
+        self.__ramping = bool(value)
 
     def read_fault(self):
         return self.__fault
