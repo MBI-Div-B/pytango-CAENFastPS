@@ -31,6 +31,11 @@ class CAENFastPS(Device):
                         access=AttrWriteType.READ_WRITE,
                         unit='V',)
 
+    resistance = attribute(label='resistance',
+                        dtype=float,
+                        access=AttrWriteType.READ,
+                        unit='ohm',)
+
     power = attribute(label='power',
                         dtype=float,
                         access=AttrWriteType.READ,
@@ -100,6 +105,9 @@ class CAENFastPS(Device):
 
     def read_power(self):
         return float(self.write_read('MRW'))
+
+    def read_resistance(self):
+        return float(self.read_voltage()/self.read_current())
 
     def read_loop_mode(self):
         return self.__loop_mode
