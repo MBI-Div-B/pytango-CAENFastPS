@@ -1,6 +1,6 @@
 #!/usr/bin/python3 -u
 # coding: utf8
-from tango import AttrWriteType, DevState, DispLevel
+from tango import AttrWriteType, DevState, DispLevel, AttReqType
 from tango.server import Device, attribute, command, device_property
 
 import socket
@@ -107,6 +107,7 @@ class CAENFastPS(Device):
 
         self.set_state(DevState.STANDBY)
         self.__ramping = False
+        self.__waveform = []
 
     def delete_device(self):
         self.set_state(DevState.OFF)
@@ -190,6 +191,25 @@ class CAENFastPS(Device):
     def update_mode(self, mode: UpMode):
         mode_str = UpMode(mode).name
         self.write_read(f"UPMODE:{mode_str}")
+    
+    @attribute(access=AttrWriteType.READ_WRITE, max_dim_x=500_000)
+    def waveform(self) -> list[float]:
+        return self.__waveform
+
+    @waveform.setter
+    def waveform(self, wave: list[float]):
+        if len(wave) >= 100:
+            wave_str = ":".join([f"{value:.3f}" for value in wave])
+            ans = self.write_read(f"WAVE:POINTS: {wave_str}")
+            if ans == 0:
+                self.__waveform = wave
+    
+    @waveform.is_allowed
+    def waveform(self, req_type):
+        if req_type == AttReqType.WRITE_REQ:
+            return (not self.__fault) and (not self.__enabled)
+        else:
+            return True
 
     @command
     def enable(self):
@@ -209,8 +229,8 @@ class CAENFastPS(Device):
         self.write_read("LOOP:V")
 
     @command
-    def set_waveform(self, wave: [float,]) -> None:
-
+    def set_waveform(self, wave: list[float]) -> None:
+        pass
 
     @command(dtype_in=str, doc_in="command", dtype_out=str, doc_out="response")
     def write_read(self, cmd):
