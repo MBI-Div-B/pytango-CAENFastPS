@@ -11,6 +11,10 @@ class LoopMode(IntEnum):
     Current = 0
     Voltage = 1
 
+class UpMode(IntEnum):
+    ANALOG = 0
+    NORMAL = 1
+    WAVEFORM = 2
 
 class CAENFastPS(Device):
     """CAENFastPS
@@ -176,6 +180,16 @@ class CAENFastPS(Device):
 
     def read_fault(self):
         return self.__fault
+    
+    @attribute(access=AttrWriteType.READ_WRITE)
+    def update_mode(self) -> UpMode:
+        ans = self.write_read("UPMODE:?")
+        return UpMode[ans]
+    
+    @update_mode.setter
+    def update_mode(self, mode: UpMode):
+        mode_str = UpMode(mode).name
+        self.write_read(f"UPMODE:{mode_str}")
 
     @command
     def enable(self):
