@@ -211,11 +211,11 @@ class CAENFastPS(Device):
 
         ret_cmd = "#{:s}".format(cmd)
 
-        if "#ACK" in ret:
+        if "#AK" in ret:
             # write command acknowledged - nothing to return
             self.debug_stream("write command acknowledged")
             return 0
-        elif "#NACK" in ret:
+        elif "#NAK" in ret:
             # write command not acknowledged - nothing to return
             i = ret.find(":")
             self.warn_stream(
