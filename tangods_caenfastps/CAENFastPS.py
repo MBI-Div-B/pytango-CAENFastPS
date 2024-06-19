@@ -225,7 +225,8 @@ class CAENFastPS(Device):
     
     @attribute(access=AttrWriteType.READ_WRITE)
     def waveform_periods(self) -> int:
-        return self.write_read("WAVE:N_PERIODS:?")
+        ans = self.write_read("WAVE:N_PERIODS:?")
+        return int(ans)
     
     @waveform_periods.setter
     def waveform_periods(self, num: int):
@@ -271,11 +272,12 @@ class CAENFastPS(Device):
             return [-2, ""]
         # evaluate the response
 
-        ret_cmd = "#{:s}".format(cmd)
+        ret_cmd = "#{:s}:".format(cmd.rstrip(":?"))
+        self.debug_stream("{:s} - {:s}".format(ret_cmd, ret))
 
         if "#AK" in ret:
             # write command acknowledged - nothing to return
-            self.debug_stream("write command acknowledged")
+            self.info_stream("write command acknowledged")
             return 0
         elif "#NAK" in ret:
             # write command not acknowledged - nothing to return
@@ -286,8 +288,7 @@ class CAENFastPS(Device):
             return -1
         elif ret_cmd in ret:
             # read command acknowledged - return value
-            res = ret[len(ret_cmd) + 1 : -2]
-            self.debug_stream("{:s} - {:s}".format(ret_cmd, res))
+            res = ret[len(ret_cmd): -2]
             return res
         else:
             i = ret.find(":")
