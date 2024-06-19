@@ -208,10 +208,14 @@ class CAENFastPS(Device):
     def voltage_mode(self):
         self.write_read("LOOP:V")
 
+    @command
+    def set_waveform(self, wave: [float,]) -> None:
+
+
     @command(dtype_in=str, doc_in="command", dtype_out=str, doc_out="response")
     def write_read(self, cmd):
         try:
-            self.con.send("{:s}\r\n".format(cmd).encode("utf8"))
+            self.con.send("{:s}\r".format(cmd).encode("utf8"))
             ret = self.con.recv(1024).decode("utf8")
             while ret.find("\r\n") == -1:
                 ret += self.con.recv(1024).decode("utf8")
