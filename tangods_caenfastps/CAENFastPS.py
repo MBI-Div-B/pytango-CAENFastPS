@@ -142,6 +142,12 @@ class CAENFastPS(Device):
             self.write_read("MWIR:{:f}".format(value))
         else:
             self.write_read("MWI:{:f}".format(value))
+    
+    def is_current_allowed(self, req_type):
+        if req_type == AttReqType.WRITE_REQ:
+            return self.__enabled
+        else:
+            return True
 
     def read_ramp_current(self):
         return float(self.write_read("MSRI:?"))
@@ -255,11 +261,9 @@ class CAENFastPS(Device):
             return 0
         elif "#NAK" in ret:
             # write command not acknowledged - nothing to return
-            i = ret.find(":")
+            msg = ret[5:].strip()
             self.warn_stream(
-                "write command not acknowledged with error code - {:02d}".format(
-                    int(ret[i + 1 : -2])
-                )
+                "write command not acknowledged with error: {}".format(msg)
             )
             return -1
         elif ret_cmd in ret:
