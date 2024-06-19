@@ -164,6 +164,12 @@ class CAENFastPS(Device):
         else:
             self.write_read("MWV:{:f}".format(value))
 
+    def is_voltage_allowed(self, req_type):
+        if req_type == AttReqType.WRITE_REQ:
+            return self.__enabled
+        else:
+            return True
+
     def read_ramp_voltage(self):
         return float(self.write_read("MSRV:?"))
 
@@ -216,6 +222,14 @@ class CAENFastPS(Device):
             return (not self.__fault) and (not self.__enabled)
         else:
             return True
+    
+    @attribute(access=AttrWriteType.READ_WRITE)
+    def waveform_periods(self) -> int:
+        return self.write_read("WAVE:N_PERIODS:?")
+    
+    @waveform_periods.setter
+    def waveform_periods(self, num: int):
+        return self.write_read("WAVE:N_PERIODS:{:d}".format(num))
 
     @command
     def enable(self):
@@ -235,8 +249,12 @@ class CAENFastPS(Device):
         self.write_read("LOOP:V")
 
     @command
-    def set_waveform(self, wave: list[float]) -> None:
-        pass
+    def start_waveform(self) -> None:
+        self.write_read("WAVE:START")
+    
+    @command
+    def stop_waveform(self) -> None:
+        self.write_read("WAVE:STOP")
 
     @command(dtype_in=str, doc_in="command", dtype_out=str, doc_out="response")
     def write_read(self, cmd):
