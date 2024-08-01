@@ -219,7 +219,7 @@ class CAENFastPS(Device):
     @waveform.is_allowed
     def waveform(self, req_type):
         if req_type == AttReqType.WRITE_REQ:
-            return (not self.__fault) and (not self.__enabled)
+            return (not self.__fault)  # and (not self.__enabled)
         else:
             return True
     
